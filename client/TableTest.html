@@ -27,12 +27,14 @@ table, th, td {
 	
 	
 	
-	var date = 1;
-	var length = 5
+	var date = 0;
+	var weekLength = 5
 	var startIndex  = 0
-	function incrementDate(times)
+	var days = 28;
+	function incrementDate(times, days)
 	{
-		if (date < 31)
+		
+		if (date < days)
 		{
 			date = date+1
 		}
@@ -42,69 +44,41 @@ table, th, td {
 		}
 	}
 	
+	function capNumList(num, days)
+	{
+		if (num < days && num >= 0)
+		{
+			return numList[num]
+		}
+		
+		else 
+		{
+			return "";
+		}
+	}
 	
 	numList = []
-	for (i = 0; i < 31; i++)
+	for (i = 1; i <= days; i++)
 	{
-		numList.push(0);
+		numList.push(i);
 	}
-	for (i = 0; i < 31/7 + 1; i++)
+	for (i = 0; i < days/7 ; i++)
 	{
 		
 		for (k = 0; k < length; k++)
 		{
-			numList[i] = date
-			incrementDate(1)
+			incrementDate(1, days)
 		}
-		document.write("<tr>" + "<td>"+ numList[0]+ "</td>" + "<td>"+ numList[1]+ "</td>"  + "<td>"+ numList[2]+ "</td>"  + "<td>"+ numList[3]+ "</td>"  + "<td>"+ numList[4]+ "</td>"  + "</tr>")
-		incrementDate(2)
-		startIndex += 5
+		
+		document.write("<tr>" + "<td>"+ capNumList(date, days)+ "</td>" + "<td>"+ capNumList(date+1, days) + "</td>"  +
+			"<td>"+ capNumList(date+2, days) + "</td>"  + "<td>"+ capNumList(date+3, days) + "</td>"  + "<td>"+ capNumList(date+4, days) + "</td>"  + "</tr>")
+		incrementDate(2, days)
+		
 	}
 	
 	
 	</script>
-	
-	 <!--
-	 <tr>
-		<td>1</td>
-		<td>2</td>
-		<td>3</td>
-		<td>4</td>
-		<td>5</td>
-	</tr>
-	
-	<tr>
-		<td>8</td>
-		<td>9</td>
-		<td>10</td>
-		<td>11</td>
-		<td>12</td>
-	</tr>
-	
-	<tr>
-		<td>15</td>
-		<td>16</td>
-		<td>17</td>
-		<td>18</td>
-		<td>19</td>
-	</tr>
-	
-	<tr>
-		<td>22</td>
-		<td>23</td>
-		<td>24</td>
-		<td>25</td>
-		<td>26</td>
-	</tr>
-	
-	<tr>
-		<td>29</td>
-		<td>30</td>
-		<td>31</td>
-		<td  ></td>
-		<td  ></td>
-	</tr>
-	-->
+
 </table>
 
 </body>
