@@ -5,6 +5,7 @@
     {
         "http" : "latest",
         "querystring" : "latest",
-        "request" : "latest"
+        "request" : "latest",
+        "express" : "latest"
     }
 }
