@@ -6,6 +6,7 @@
         "http" : "latest",
         "querystring" : "latest",
         "request" : "latest",
-        "express" : "latest"
+        "express" : "latest",
+        "node-calendar" : "latest"
     }
 }
