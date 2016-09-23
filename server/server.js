@@ -38,6 +38,9 @@ function day(year, month, day, schedules) {
     this.month = month || 1;
     this.day = day || 1;
     this.schedules = schedules || [];
+    this.addSchedule = function(schedule) {
+      this.schedules.push(schedule);
+    }
 }
 
 function schedule(name) {
@@ -62,13 +65,8 @@ function schedule(name) {
 //console.log(date);
 //console.log(cal.itermonthdates(2016, 2));
 
-var aday = new schedule("a-day");
-aday.addPeriod("Period 1", "8:15am", "9:45am");
-aday.addReservable("chromecart");
 
-console.log(aday);
 
-var chromecart = new resourceType("chromecart");
 
 var dayarray = [];
 
@@ -103,10 +101,21 @@ function listener(request, response) {
 app.use("/index.html", express.static(__dirname + "/../client"));
 app.post("/rest", listener);
 
+var aday = new schedule("a-day");
+aday.addPeriod("Period 1", "8:15am", "9:47am");
+aday.addPeriod("Period 2", "9:52am", "11:25");
+aday.addReservable("chromecart");
+
+
+var chromecart = new resourceType("chromecart");
+
 //app.get('/event', listener);
 for(mm = 0; mm < 12; mm++) {
     for(dd = 0; dd < 30; dd++) {
-        dayarray.push(new day(2016, mm, dd));
+        var d = new day(2016, mm, dd);
+        d.addSchedule(aday);
+        console.log(d.schedules[0].reservables);
+        dayarray.push(d);
     }
 }
 

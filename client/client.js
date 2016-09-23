@@ -5,18 +5,17 @@ function request(json, successCallback, errorCallback) {
     $.ajax({
         url: "http://localhost:8080/rest",
         type: "POST",
-        data: JSON.stringify(reqData),
+        data: JSON.stringify(json),
         async: true,
         success: successCallback,
         error: errorCallback
     })
 }
 
-var reqData = {event : "getdays", year : 2016, days : "1:1,1:2,1:3,1:4,1:5"};
-var daata = JSON.stringify(reqData);
-console.log(daata);
 
 $("#button").on('click', function() {
+    var reqData = {event : "getdays", year : $("#year").attr("value"), days : $("#month").attr("value") + ":" + $("#day").attr("value")};
+    console.log(reqData);
     request(reqData,
         function (data) {
             $("#response").html(JSON.stringify(data));
