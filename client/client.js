@@ -14,11 +14,29 @@ function request(json, successCallback, errorCallback) {
 
 
 $("#button").on('click', function() {
-    var reqData = {event : "getdays", year : $("#year").attr("value"), days : $("#month").attr("value") + ":" + $("#day").attr("value")};
+    var reqData = {event : "getdays", days : $("#year").val() + $("#month").val() + $("#day").val()};
     console.log(reqData);
     request(reqData,
         function (data) {
-            $("#response").html(JSON.stringify(data));
+            var json = JSON.parse(data);
+            var dayhtml = "";
+            console.log(json);
+
+            var periods = "";
+            $.each(json, function(key, value) {
+                $.each(value, function(key2, value2) {
+                    dayhtml += ("<li>" + key2 + " : " + value2 + "</li>");
+                });
+                for (var ss = 0; ss < value.schedules.length; ss++) {
+                    var pps = value.schedules[ss].periods;
+                    for (var pp = 0; pp < pps.length; pp++) {
+                        periods += "<li>" + pps[pp].name + "</li>";
+                    }
+                }
+            });
+
+            $("#periods").html(periods);
+            $("#response").html(dayhtml);
             $("#response").addClass("updated");
         },
         function (err) {

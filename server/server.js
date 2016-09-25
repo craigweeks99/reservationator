@@ -68,7 +68,7 @@ function schedule(name) {
 
 
 
-var dayarray = [];
+var dayarray = {};
 
 function listener(request, response) {
   console.log("Request recieved...");
@@ -82,12 +82,17 @@ function listener(request, response) {
         console.log("DATA RECIEVED: " + body);
         var json = JSON.parse(body);
         if(json.event == "getdays") {
-            var days = json.days.split(",");
-            for(dd = 0; dd < days.length; dd++){
-                days[dd] = days[dd].split(":");
+            var days = json.days.split(",");        //split dates
+            var resJson = {};
+            for(var ii = 0; ii < days.length; ii++) {
+                console.log("Day:" + days[ii]);
+                resJson[days[ii]] = dayarray[days[ii]];
             }
-            response.end(JSON.stringify(dayarray[0]));
-        } else {
+            console.log(dayarray["201611"]);
+            response.end(JSON.stringify(resJson));
+        } else if (json.event == "resourcetypestatus") {
+            var result = checkResourceTypeStatus(json.year, json.month, json.day)
+        }else {
             var resJSON = {"pung" : "true"};
             response.end(JSON.stringify(resJSON));
         }
@@ -98,13 +103,18 @@ function listener(request, response) {
 
 }
 
-app.use("/index.html", express.static(__dirname + "/../client"));
+app.use("/", express.static(__dirname + "/../client"));
 app.post("/rest", listener);
 
 var aday = new schedule("a-day");
 aday.addPeriod("Period 1", "8:15am", "9:47am");
 aday.addPeriod("Period 2", "9:52am", "11:25");
 aday.addReservable("chromecart");
+
+var bday = new schedule("b-day");
+bday.addPeriod("Period 5", "8:15am", "9:47am");
+bday.addPeriod("Period 6", "9:52am", "11:25");
+bday.addReservable("chromecart");
 
 
 var chromecart = new resourceType("chromecart");
@@ -113,11 +123,12 @@ var chromecart = new resourceType("chromecart");
 for(mm = 0; mm < 12; mm++) {
     for(dd = 0; dd < 30; dd++) {
         var d = new day(2016, mm, dd);
-        d.addSchedule(aday);
-        console.log(d.schedules[0].reservables);
-        dayarray.push(d);
+        if(dd%2 == 0) {d.addSchedule(bday);} else {d.addSchedule(aday);}
+
+        dayarray["2016" + String(mm+1) + String(dd+1)] = d;
     }
 }
+console.log(dayarray["201611"]);
 
 app.listen(PORT, function() {
   console.log("Server listening on " + PORT);
