@@ -90,8 +90,14 @@ function listener(request, response) {
             }
             console.log(dayarray["201611"]);
             response.end(JSON.stringify(resJson));
+        } else if (json.event == "addSchedule") {
+
         } else if (json.event == "resourcetypestatus") {
             var result = checkResourceTypeStatus(json.year, json.month, json.day)
+        } else if (json.event == "gapiverify") {
+            var resJson = {tokenVerified : false}
+            if(verifyUserToken(json.token)){resJson.tokenVerified = true;}
+            response.end(JSON.stringify(resJson));
         }else {
             var resJSON = {"pung" : "true"};
             response.end(JSON.stringify(resJSON));
