@@ -1,17 +1,13 @@
-var ga = require("googleapis");
+var verifier = require('google-id-token-verifier');
 
-function recieveUserToken() {
+// ID token from client
 
-}
-
-var googleIDToken = null;
+// app's client IDs to check with audience in ID Token.
+var clientId = '795485120668-g9bvskc0h1fgp6v1u2n1ll06otvg6f9g.apps.googleusercontent.com';
 function verifyUserToken(tokenJSON) {
-    var verifier = new ga.GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-        .setAudience(Arrays.asList("795485120668-g9bvskc0h1fgp6v1u2n1ll06otvg6f9g.apps.googleusercontent.com"))
-        .setIssuer("acounts.google.com")
-        .build();
-
-    googleIDToken = verifier.verify(tokenJSON.token);
-
-    if(googleIDToken) {return true;} else {return false;}
+  var verification = verifier.verify(tokenJSON.token, clientId, function(err, info) {
+    console.log(err);
+    console.log(info);
+  });
+  if(verification) {return true;} else {return false;}
 }

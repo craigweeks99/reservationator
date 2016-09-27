@@ -8,6 +8,8 @@
         "request" : "latest",
         "express" : "latest",
         "node-calendar" : "latest",
-        "googleapis" : "latest"
+        "googleapis" : "latest",
+        "google-id-token-verifier": "latest"
+
     }
 }
