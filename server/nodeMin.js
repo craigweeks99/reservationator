@@ -81,7 +81,8 @@ function schedule(name) {
 
 
 
-var dayarray = {};
+var dayarray = [];
+var days = [];
 
 function listener(request, response) {
   console.log("Request recieved...");
@@ -95,14 +96,20 @@ function listener(request, response) {
         console.log("DATA RECIEVED: " + body);
         var json = JSON.parse(body);
         if(json.event == "getdays") {
-            var days = json.days.split(",");        //split dates
+            console.log("Returning dates from " + json.start + " to " + json.end);
+            var start = days.indexOf(json.start);
+            var end = days.indexOf(json.end);
+            var resarr = dayarray.slice(start, end);
+            //console.log(resarr);
             var resJson = {};
-            for(var ii = 0; ii < days.length; ii++) {
-                console.log("Day:" + days[ii]);
-                resJson[days[ii]] = dayarray[days[ii]];
+            for(var i = 0; i < resarr.length; i++) {
+              resJson[resarr[i].day] = resarr[i].info;
             }
-            console.log(dayarray["201611"]);
-            response.end(JSON.stringify(resJson));
+
+            var res = JSON.stringify(resJson);
+            console.log("returning days: " + res);
+            console.log("dayrange: " + start + " " + end);
+            response.end(res);
         } else if (json.event == "addSchedule") {
 
         } else if (json.event == "resourcetypestatus") {
@@ -144,10 +151,12 @@ for(mm = 0; mm < 12; mm++) {
         var d = new day(2016, mm, dd);
         if(dd%2 == 0) {d.addSchedule(bday);} else {d.addSchedule(aday);}
 
-        dayarray["2016" + String(mm+1) + String(dd+1)] = d;
+        var ddd = "2016" + String(mm+1) + String(dd+1);
+        dayarray.push({"day" : ddd, "info" : d});
+        days.push(ddd);
     }
 }
-console.log(dayarray["201611"]);
+
 
 app.listen(PORT, function() {
   console.log("Server listening on " + PORT);

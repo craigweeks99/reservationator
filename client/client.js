@@ -18,8 +18,8 @@ function request(json, successCallback, errorCallback) {
 
 
 $("#button").on('click', function() {
-    var reqData = {event : "getdays", days : $("#year").val() + $("#month").val() + $("#day").val()};
-    console.log(reqData);
+    var reqData = {event : "getdays", start : $("#year").val() + $("#month").val() + $("#day").val(), end : $("#year").val() + $("#month").val() + "20"};
+    console.log(JSON.stringify(reqData));
     request(reqData,
         function (data) {
             var json = JSON.parse(data);
