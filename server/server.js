@@ -2,74 +2,23 @@ var http = require('http');
 var qs = require('querystring');
 var request = require('request');
 var express = require('express');
-var clndr = require('node-calendar');
+
+
+users = {};
+var groups =
+{
+    defaultone : {
+        restrictive : false,    //anyone can join
+        users : {
+            authlevel : [],
+            ids : []
+        }
+    }
+}
 
 var app = express();
 
 const PORT = 8080;  //incoming http PORT
-
-var epoch = new Date().getTime();
-var datetime = Date(epoch).split(" ");
-var date = {
-    dayname : datetime[0],
-    month : datetime[1],
-    daynumber : datetime[2],
-    year : datetime[3],
-    time : datetime[4],
-    zonecode : datetime[5],
-    zonename : datetime[6]
-}
-
-
-
-function resourceType(name, properties) {
-    this.name = "";
-    this.properties = properties || {};
-}
-
-function resourceInstance(type, properties) {
-    this.id = "1099185";    //TODO ID GENERATION
-    this.type = type;
-    this.properties = properties || typelist[type].properties;
-}
-
-function day(year, month, day, schedules) {
-    this.year = year || 2016;
-    this.month = month || 1;
-    this.day = day || 1;
-    this.schedules = schedules || [];
-    this.addSchedule = function(schedule) {
-      this.schedules.push(schedule);
-    }
-}
-
-function schedule(name) {
-    this.name = name || "sch"   //name for schedule (can be added to multiple days)
-    this.reservables = [];      //list of resources that can be reserved during periods in this schedule
-    this.periods = [];          //portions of time during which reservables can be schedules
-    this.addPeriod = function(name, start, end) {
-        var p = {
-            "name" : name,
-            "start" : start,
-            "end" : end
-        }
-        this.periods.push(p);
-    }
-    this.addReservable = function(name) {
-        this.reservables.push(name);
-    }
-}
-
-//var cal = new clndr.Calendar(clndr.MONDAY);
-//var yearCalendar = cal.yeardayscalendar(epoch);
-//console.log(date);
-//console.log(cal.itermonthdates(2016, 2));
-
-
-
-
-var dayarray = [];
-var days = [];
 
 function listener(request, response) {
   console.log("Request recieved...");
@@ -87,7 +36,6 @@ function listener(request, response) {
             var start = days.indexOf(json.start);
             var end = days.indexOf(json.end);
             var resarr = dayarray.slice(start, end);
-            //console.log(resarr);
             var resJson = {};
             for(var i = 0; i < resarr.length; i++) {
               resJson[resarr[i].day] = resarr[i].info;
@@ -102,15 +50,50 @@ function listener(request, response) {
         } else if (json.event == "resourcetypestatus") {
             var result = checkResourceTypeStatus(json.year, json.month, json.day)
         } else if (json.event == "gapiverify") {
-            var resJson = {tokenVerified : false}
-            if(verifyUserToken(json.token)){resJson.tokenVerified = true;}
-            response.end(JSON.stringify(resJson));
-        }else {
+            var resJson = {verified : false}
+            verifyUserToken(json.token).then(function(user) {
+                if(user.verified){
+                    resJson.verified = true;
+                    if(users[user.sub]) {
+                        resJson.groups = users[user.sub].groups;
+                    } else {
+                        users[user.sub] = user;
+                        users[user.sub].groups = [];
+                    }
+                }
+                response.end(JSON.stringify(resJson));
+            }, function (err) {
+                console.log("User token verification failed!!");
+                response.end(JSON.stringify(resJson));
+            });
+        } else if (json.event == "joingroup") {
+            var resJSON = {groupID : json.groupID};
+            verifyUserToken(json.token).then(function(user) {
+                if(user.verified) {
+                    resJSON.verified=true;
+                    if(groups[json.groupID])
+                    {
+                        if(groups[json.groupID].users.ids.indexOf(user.sub) > -1) {
+                            resJSON.joined = true;
+                        } else if(!groups[json.groupID].restrictive) {
+                            groups[json.groupID].users.ids.push(user.sub);  //add user to that group
+                            resJSON.joined = true;
+                            users[user.sub].groups.push(json.groupID);
+                        } else {
+                            resJSON.joined = false;
+                        }
+                    } else {
+                        resJSON.joined = false;
+                    }
+                } else {
+                    resJSON.verified = false;
+                }
+                response.end(JSON.stringify(resJSON));
+            });
+        } else {
             var resJSON = {"pung" : "true"};
             response.end(JSON.stringify(resJSON));
         }
-
-      var reqJSON = JSON.parse(body);
 
   });
 
@@ -119,30 +102,7 @@ function listener(request, response) {
 app.use("/", express.static(__dirname + "/../client"));
 app.post("/rest", listener);
 
-var aday = new schedule("a-day");
-aday.addPeriod("Period 1", "8:15am", "9:47am");
-aday.addPeriod("Period 2", "9:52am", "11:25");
-aday.addReservable("chromecart");
 
-var bday = new schedule("b-day");
-bday.addPeriod("Period 5", "8:15am", "9:47am");
-bday.addPeriod("Period 6", "9:52am", "11:25");
-bday.addReservable("chromecart");
-
-
-var chromecart = new resourceType("chromecart");
-
-//app.get('/event', listener);
-for(mm = 0; mm < 12; mm++) {
-    for(dd = 0; dd < 30; dd++) {
-        var d = new day(2016, mm, dd);
-        if(dd%2 == 0) {d.addSchedule(bday);} else {d.addSchedule(aday);}
-
-        var ddd = "2016" + String(mm+1) + String(dd+1);
-        dayarray.push({"day" : ddd, "info" : d});
-        days.push(ddd);
-    }
-}
 
 
 app.listen(PORT, function() {
