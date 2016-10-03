@@ -3,7 +3,6 @@
     "version" : "0.0.1",
     "dependencies" :
     {
-        "nat-geo-api" : "latest",
         "http" : "latest",
         "querystring" : "latest",
         "request" : "latest",

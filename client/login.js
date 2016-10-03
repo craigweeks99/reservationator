@@ -28,7 +28,8 @@ $("#confirmbtn").on("click", function() {
         if(dataJSON.joined) {
             $.cookie("groupID", dataJSON.groupID);
         }
-        $("#message").html("Successfully join group " + dataJSON.groupID + "!!!");
+        $("#message").html("Successfully joined group " + dataJSON.groupID + "!!!");
+        window.location.replace("http://localhost:8080/main.html");
     }, function(err) {
         $("#message").html("Problem joining group!");
     })
