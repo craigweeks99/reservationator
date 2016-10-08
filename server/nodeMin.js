@@ -1,3 +1,25 @@
+var mongoClient = require("mongodb").MongoClient;
+var assert = require("assert");
+
+var url = 'mongodb://localhost:27017/reservationator';
+
+function mongo() {
+    return mongoClient.connect(url);
+}
+
+/*
+module.exports = function(params) {
+
+  var ip = params.ip || process.env.IP;
+  var port = params.port || 27017;
+  var collection = params.collection;
+
+  var db = MongoClient.connect('mongodb://' + ip + ':' + port + '/' + collection);
+
+  return db;
+
+}
+*/
 var verifier = require('google-id-token-verifier');
 var request = require('request');
 
@@ -39,13 +61,14 @@ function resourceType(name, properties) {
     this.properties = properties || {};
 }
 
-function resourceInstance(type, properties) {
-    this.id = "1099185";    //TODO ID GENERATION
+function resourceInstance(type, name, properties) {
+    this.name = name || this.id;
     this.type = type;
     this.properties = properties || typelist[type].properties;
 }
 
 function day(year, month, day, schedules) {
+    this.date = String(year) + String(month) + String(day);
     this.year = year || 2016;
     this.month = month || 1;
     this.day = day || 1;
@@ -107,7 +130,15 @@ for(mm = 0; mm < 12; mm++) {
         if(dd%2 == 0) {d.addSchedule(bday);} else {d.addSchedule(aday);}
 
         var ddd = "2016" + String(mm+1) + String(dd+1);
-        dayarray.push({"day" : ddd, "info" : d});
+
+        dayarray.push(d);
+        
+        mongo().then(function(db) {
+            db.collection("days").insertMany(dayarray);
+            db.close();
+        });
+
+
         days.push(ddd);
     }
 }
@@ -171,12 +202,22 @@ function listener(request, response) {
             verifyUserToken(json.token).then(function(user) {
                 if(user.verified){
                     resJson.verified = true;
-                    if(users[user.sub]) {
-                        resJson.groups = users[user.sub].groups;
-                    } else {
-                        users[user.sub] = user;
-                        users[user.sub].groups = [];
-                    }
+                    var usr = {};
+                    mongo().then(function(db) {
+                        db.collection("users").find({googleID : user.sub}).toArray(function(err, result) {
+                            if(!err) {} else if (!result.length){
+                                db.collection("users").insertOne(
+                                    {
+                                        first_name : user.given_name,
+                                        last_name : user.family_name,
+                                        googleID : user.sub,
+                                        groups : []
+                                    });
+                            } else {
+                                resJson.groups = result[0].groups;
+                            }
+                        });
+                    });
                 }
                 response.end(JSON.stringify(resJson));
             }, function (err) {
@@ -188,20 +229,23 @@ function listener(request, response) {
             verifyUserToken(json.token).then(function(user) {
                 if(user.verified) {
                     resJSON.verified=true;
-                    if(groups[json.groupID])
-                    {
-                        if(groups[json.groupID].users.ids.indexOf(user.sub) > -1) {
-                            resJSON.joined = true;
-                        } else if(!groups[json.groupID].restrictive) {
-                            groups[json.groupID].users.ids.push(user.sub);  //add user to that group
-                            resJSON.joined = true;
-                            users[user.sub].groups.push(json.groupID);
-                        } else {
-                            resJSON.joined = false;
-                        }
-                    } else {
-                        resJSON.joined = false;
-                    }
+                    mongo().then(function(db) {
+                        db.collection("groups").find({name : json.groupID}).toArray(function(err, result) {
+                            console.log(result);
+                            if(!err && result.length)
+                            {
+                                if((result[0].users).indexOf(user.sub) > -1) {
+                                    resJSON.joined = true;
+                                } else if(!result.restrictive) {
+                                    db.collection("groups").update({name : json.groupID}, {$push : {users : user.sub}});
+                                    resJSON.joined = true;
+                                } else {
+                                    resJSON.joined = false;
+                                }
+                            }
+
+                        });
+                    });
                 } else {
                     resJSON.verified = false;
                 }

@@ -5,13 +5,14 @@ function resourceType(name, properties) {
     this.properties = properties || {};
 }
 
-function resourceInstance(type, properties) {
-    this.id = "1099185";    //TODO ID GENERATION
+function resourceInstance(type, name, properties) {
+    this.name = name || this.id;
     this.type = type;
     this.properties = properties || typelist[type].properties;
 }
 
 function day(year, month, day, schedules) {
+    this.date = String(year) + String(month) + String(day);
     this.year = year || 2016;
     this.month = month || 1;
     this.day = day || 1;
@@ -73,7 +74,15 @@ for(mm = 0; mm < 12; mm++) {
         if(dd%2 == 0) {d.addSchedule(bday);} else {d.addSchedule(aday);}
 
         var ddd = "2016" + String(mm+1) + String(dd+1);
-        dayarray.push({"day" : ddd, "info" : d});
+
+        dayarray.push(d);
+        
+        mongo().then(function(db) {
+            db.collection("days").insertMany(dayarray);
+            db.close();
+        });
+
+
         days.push(ddd);
     }
 }

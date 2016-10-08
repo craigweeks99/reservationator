@@ -3,14 +3,13 @@
     "version" : "0.0.1",
     "dependencies" :
     {
-        "nat-geo-api" : "latest",
         "http" : "latest",
         "querystring" : "latest",
         "request" : "latest",
         "express" : "latest",
         "node-calendar" : "latest",
         "googleapis" : "latest",
-        "google-id-token-verifier": "latest"
-
+        "google-id-token-verifier": "latest",
+        "mongodb" : "latest"
     }
 }

@@ -54,12 +54,22 @@ function listener(request, response) {
             verifyUserToken(json.token).then(function(user) {
                 if(user.verified){
                     resJson.verified = true;
-                    if(users[user.sub]) {
-                        resJson.groups = users[user.sub].groups;
-                    } else {
-                        users[user.sub] = user;
-                        users[user.sub].groups = [];
-                    }
+                    var usr = {};
+                    mongo().then(function(db) {
+                        db.collection("users").find({googleID : user.sub}).toArray(function(err, result) {
+                            if(err) else if(!result.length){
+                                db.collection("users").insertOne(
+                                    {
+                                        first_name : user.given_name,
+                                        last_name : user.family_name,
+                                        googleID : user.sub,
+                                        groups : []
+                                    });
+                            } else {
+                                resJson.groups = result[0].groups;
+                            }
+                        });
+                    });
                 }
                 response.end(JSON.stringify(resJson));
             }, function (err) {
@@ -71,20 +81,23 @@ function listener(request, response) {
             verifyUserToken(json.token).then(function(user) {
                 if(user.verified) {
                     resJSON.verified=true;
-                    if(groups[json.groupID])
-                    {
-                        if(groups[json.groupID].users.ids.indexOf(user.sub) > -1) {
-                            resJSON.joined = true;
-                        } else if(!groups[json.groupID].restrictive) {
-                            groups[json.groupID].users.ids.push(user.sub);  //add user to that group
-                            resJSON.joined = true;
-                            users[user.sub].groups.push(json.groupID);
-                        } else {
-                            resJSON.joined = false;
-                        }
-                    } else {
-                        resJSON.joined = false;
-                    }
+                    mongo().then(function(db) {
+                        db.collection("groups").find({name : json.groupID}).toArray(function(err, result) {
+                            console.log(result);
+                            if(!err && result.length)
+                            {
+                                if((result[0].users).indexOf(user.sub) > -1) {
+                                    resJSON.joined = true;
+                                } else if(!result.restrictive) {
+                                    db.collection("groups").update({name : json.groupID}, {$push : {users : user.sub}});
+                                    resJSON.joined = true;
+                                } else {
+                                    resJSON.joined = false;
+                                }
+                            }
+
+                        });
+                    });
                 } else {
                     resJSON.verified = false;
                 }
