@@ -10,28 +10,31 @@ function request(json, successCallback, errorCallback) {
     })
 }
 
-$("#groupinput").on("click", function() {
-    $("#confirmbtn").val($(this).val());
-    $("#groupselection").find("*").removeClass("selected");
-    $(this).addClass("selected");
+$("#groupinput").on("click", function() {                   //callback for input box click
+    $("#confirmbtn").val($(this).val());                    //update confirmbutton to reflect content
+    $("#groupselection").find("*").removeClass("selected"); //deselect everything
+    $(this).addClass("selected");                           //select the input box
 });
 
 $("#confirmbtn").on("click", function() {
-    if($("#groupinput").hasClass("selected"))
+    if($("#groupinput").hasClass("selected"))   //update content again for that pesky input box
     {
         $("#confirmbtn").val($("#groupinput").val());
     }
-    var json = {event: "joingroup", token : $.cookie("id_token"), groupID: $("#confirmbtn").val()};
-    console.log(json);
-    request(json, function(data) {
-        var dataJSON = JSON.parse(data);
+    var json = {event: "joingroup", token : $.cookie("id_token"), groupID: $("#confirmbtn").val()}; //json request creation
+
+    request(json, function(data) {          //make request to server and recieve data
+        var dataJSON = JSON.parse(data);    //parse data string to jso
+        console.log(dataJSON);
         if(dataJSON.joined) {
             $.cookie("groupID", dataJSON.groupID);
+            $("#message").html("Successfully joined group " + dataJSON.groupID + "!!!");
+            window.location.replace("http://localhost:8080/main.html");
+        } else {
+            $("#message").html("Group not found!");
         }
-        $("#message").html("Successfully joined group " + dataJSON.groupID + "!!!");
-        window.location.replace("http://localhost:8080/main.html");
     }, function(err) {
-        $("#message").html("Problem joining group!");
+        $("#message").html("Error joining group!");
     })
 });
 
@@ -43,8 +46,9 @@ function onSignIn(googleUser) {
 
         $("#message").html("Verifying account with server...");
         request(tokenJson, function(data) {
-            var data = JSON.parse(data);
-            if(data.verified) {
+            console.log("DTATA :" + data);
+            var dataJSON = JSON.parse(data);
+            if(dataJSON.verified) {
                 $.cookie("id_token", id_token);
                 var groupID = $.cookie("groupID");
                 if(groupID) {
@@ -52,10 +56,10 @@ function onSignIn(googleUser) {
                     $("#confirmbtn").trigger("click");
                 } else {
                     $("#groupselection").removeClass("hidden");
-                    if(data.groups) {
+                    if(dataJSON.groups.length) {
                         var groupHTML = "";
-                        for(group in data.groups) {
-                            groupHTML += "<li>" + data.groups[group] + "</li>";
+                        for(group in dataJSON.groups) {
+                            groupHTML += "<li>" + dataJSON.groups[group] + "</li>";
                         }
                         $("#groups").html(groupHTML);
                         $("#groups li").on("click", function() {
