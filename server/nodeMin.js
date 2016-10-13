@@ -29,7 +29,7 @@ var request = require('request');
 var clientId = '795485120668-g9bvskc0h1fgp6v1u2n1ll06otvg6f9g.apps.googleusercontent.com';
 function verifyUserToken(token) {
     return new Promise(function(fullfill, reject) {
-        request({
+        request({   //making api call for google authentication
             url : "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token="+token,
             method : "POST",
             async : false
@@ -152,15 +152,15 @@ var request = require('request');
 var express = require('express');
 
 
-var app = express();
+var app = express();//the app is the server
 
 const PORT = 8080;  //incoming http PORT
 
-function listener(request, response) {
-  console.log("Request recieved...");
+function listener(request, response) {  //big boi function for server handling
+    console.log("Request recieved...");
 
-  var body = [];
-  request.on('data', function(data) {
+    var body = [];
+    request.on('data', function(data) {
       body += data;
         //TODO check for data overload
     });
@@ -258,8 +258,8 @@ function listener(request, response) {
 
 }
 
-app.use("/", express.static(__dirname + "/../client"));
-app.post("/rest", listener);
+app.use("/", express.static(__dirname + "/../client")); //serving html
+app.post("/rest", listener);                            //serving api
 
 
 
