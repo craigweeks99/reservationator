@@ -2,4 +2,4 @@ systemLog:
     destination: file
     path: C:\mongodb\data\log\mongod.log
 storage:
-    dbPath: C:\mongodb\db
+    dbPath: C:\mongodb\data\db

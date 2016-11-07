@@ -33,11 +33,14 @@ function listener(request, response) {  //big boi function for server handling
             console.log("returning days: " + res);
             console.log("dayrange: " + start + " " + end);
             response.end(res);
-        } else if (json.event == "addSchedule") {
+        }
+        else if (json.event == "addSchedule") {
 
-        } else if (json.event == "resourcetypestatus") {
+        }
+        else if (json.event == "resourcetypestatus") {
             var result = checkResourceTypeStatus(json.year, json.month, json.day)
-        } else if (json.event == "gapiverify") {
+        }
+        else if (json.event == "gapiverify") {
             var resJSON = {verified : false};   //initialize json response object
             verifyUserToken(json.token).then( (user) => {   //verify token with google api
                 if (user.verified) {
@@ -64,7 +67,8 @@ function listener(request, response) {  //big boi function for server handling
                 console.log("User token verification failed!!");
                 response.end(JSON.stringify(resJson));
             });
-        } else if (json.event == "joingroup") {
+        }
+        else if (json.event == "joingroup") {
             var resJSON = {groupID : json.groupID};
             verifyUserToken(json.token).then( (user) => {   //verify token with google
                 if(user.verified) {
@@ -91,7 +95,6 @@ function listener(request, response) {  //big boi function for server handling
                                     resJSON.joined = false;
                                 }
                             }
-                            console.log(resJSON);
                             response.end(JSON.stringify(resJSON));
                         });
                     });
@@ -101,10 +104,34 @@ function listener(request, response) {  //big boi function for server handling
                 }
 
             });
-        } else {
+        }
+        else if (json.event == "creategroup") {
+            var resJSON = {verified : false, groupCreated : false};
+            verifyUserToken(json.token).then( (user) => {
+                if(user.verified) {
+                    resJSON.verified=true;
+                    mongo().then( (db) => {
+                        console.log("here");
+                        //TODO should make sure group doesnt allready exist here.
+                        if(!db.collection("groups").find({name : json.name}))
+                        {
+                            db.collection("groups").insert({name : json.name, description : json.description, restrictive : json.restrictive, users : [user.sub]});
+                            resJSON.groupCreated = true;
+                            resJSON.group = db.collection("groups").find({name : json.group});
+                        }
+                    });
+                }
+            });
+            response.end(JSON.stringify(resJSON));
+        }
+        else {
             var resJSON = {"pung" : "true"};
             response.end(JSON.stringify(resJSON));
         }
+
+        //add resource
+        //add resourceType
+
 
   });
 

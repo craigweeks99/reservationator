@@ -29,7 +29,7 @@ var request = require('request');
 var clientId = '795485120668-g9bvskc0h1fgp6v1u2n1ll06otvg6f9g.apps.googleusercontent.com';
 function verifyUserToken(token) {
     return new Promise(function(fullfill, reject) {
-        request({
+        request({   //making api call for google authentication
             url : "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token="+token,
             method : "POST",
             async : false
@@ -132,11 +132,12 @@ for(mm = 0; mm < 12; mm++) {
         var ddd = "2016" + String(mm+1) + String(dd+1);
 
         dayarray.push(d);
-        
+        /*
         mongo().then(function(db) {
             db.collection("days").insertMany(dayarray);
             db.close();
         });
+        */
 
 
         days.push(ddd);
@@ -152,15 +153,15 @@ var request = require('request');
 var express = require('express');
 
 
-var app = express();
+var app = express();//the app is the server
 
 const PORT = 8080;  //incoming http PORT
 
-function listener(request, response) {
-  console.log("Request recieved...");
+function listener(request, response) {  //big boi function for server handling
+    console.log("Request recieved...");
 
-  var body = [];
-  request.on('data', function(data) {
+    var body = [];
+    request.on('data', function(data) {
       body += data;
         //TODO check for data overload
     });
@@ -181,11 +182,14 @@ function listener(request, response) {
             console.log("returning days: " + res);
             console.log("dayrange: " + start + " " + end);
             response.end(res);
-        } else if (json.event == "addSchedule") {
+        }
+        else if (json.event == "addSchedule") {
 
-        } else if (json.event == "resourcetypestatus") {
+        }
+        else if (json.event == "resourcetypestatus") {
             var result = checkResourceTypeStatus(json.year, json.month, json.day)
-        } else if (json.event == "gapiverify") {
+        }
+        else if (json.event == "gapiverify") {
             var resJSON = {verified : false};   //initialize json response object
             verifyUserToken(json.token).then( (user) => {   //verify token with google api
                 if (user.verified) {
@@ -212,7 +216,8 @@ function listener(request, response) {
                 console.log("User token verification failed!!");
                 response.end(JSON.stringify(resJson));
             });
-        } else if (json.event == "joingroup") {
+        }
+        else if (json.event == "joingroup") {
             var resJSON = {groupID : json.groupID};
             verifyUserToken(json.token).then( (user) => {   //verify token with google
                 if(user.verified) {
@@ -239,7 +244,6 @@ function listener(request, response) {
                                     resJSON.joined = false;
                                 }
                             }
-                            console.log(resJSON);
                             response.end(JSON.stringify(resJSON));
                         });
                     });
@@ -249,17 +253,38 @@ function listener(request, response) {
                 }
 
             });
-        } else {
+        }
+        else if (json.event == "creategroup") {
+            var resJSON = {verified : false, groupCreated : false};
+            verifyUserToken(json.token).then( (user) => {
+                if(user.verified) {
+                    resJSON.verified=true;
+                    mongo().then( (db) => {
+                        console.log("here");
+                        //TODO should make sure group doesnt allready exist here.
+                        db.collection("groups").insert({name : json.name, description : json.description, restrictive : json.restrictive, users : [user.sub]});
+                        resJSON.groupCreated = true;
+                        resJSON.group = db.collection("groups").find({name : json.group});
+                    });
+                }
+            });
+            response.end(JSON.stringify(resJSON));
+        }
+        else {
             var resJSON = {"pung" : "true"};
             response.end(JSON.stringify(resJSON));
         }
+
+        //add resource
+        //add resourceType
+
 
   });
 
 }
 
-app.use("/", express.static(__dirname + "/../client"));
-app.post("/rest", listener);
+app.use("/", express.static(__dirname + "/../client")); //serving html
+app.post("/rest", listener);                            //serving api
 
 
 

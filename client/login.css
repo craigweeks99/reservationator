@@ -37,3 +37,7 @@ ul,ol {
 li {
     padding: 20px;
 }
+
+#admin {
+    background-color: blue;
+}
