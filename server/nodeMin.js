@@ -262,9 +262,12 @@ function listener(request, response) {  //big boi function for server handling
                     mongo().then( (db) => {
                         console.log("here");
                         //TODO should make sure group doesnt allready exist here.
-                        db.collection("groups").insert({name : json.name, description : json.description, restrictive : json.restrictive, users : [user.sub]});
-                        resJSON.groupCreated = true;
-                        resJSON.group = db.collection("groups").find({name : json.group});
+                        if(!db.collection("groups").find({name : json.name}))
+                        {
+                            db.collection("groups").insert({name : json.name, description : json.description, restrictive : json.restrictive, users : [user.sub]});
+                            resJSON.groupCreated = true;
+                            resJSON.group = db.collection("groups").find({name : json.group});
+                        }
                     });
                 }
             });
