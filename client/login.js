@@ -195,7 +195,7 @@ $("#confirmbtn").on("click", function() {
         if(dataJSON.joined) {
             $.cookie("groupID", dataJSON.groupID);
             $("#message").html("Successfully joined group " + dataJSON.groupID + "!!!");
-            window.location.replace("http://localhost:8080/main.html");
+            window.location.replace("http://localhost:8080/calendar.html");
         } else {
             $("#message").html("Group not found!");
         }
