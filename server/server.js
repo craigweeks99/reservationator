@@ -37,6 +37,24 @@ function listener(request, response) {  //big boi function for server handling
         else if (json.event == "addSchedule") {
 
         }
+        else if (json.event == "getdayinfo") {
+            var resJSON = {verified : false};   //initialize json response object
+            verifyUserToken(json.token).then( (user) => {   //verify token with google api
+                if (user.verified) {
+                    resJSON.verified = true;
+                    mongo().then(function(db) {     //create connection with database
+                        db.collection("days").find({ymd : json.ymd}).toArray(function(err, result) {  //retrieve dayta
+                            console.log(result);
+                            resJSON.day = result;
+                        });
+                    });
+                }
+                response.end(JSON.stringify(resJSON));
+            }, (err) => {
+                console.log("Day retrieval failed!");
+                response.end(JSON.stringify(resJson));
+            });
+        }
         else if (json.event == "resourcetypestatus") {
             var result = checkResourceTypeStatus(json.year, json.month, json.day)
         }

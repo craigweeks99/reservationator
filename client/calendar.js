@@ -1,3 +1,14 @@
+function request(json, successCallback, errorCallback) {
+    $.ajax({
+        url: "http://localhost:8080/rest",
+        type: "POST",
+        data: JSON.stringify(json),
+        async: true,
+        success: successCallback,
+        error: errorCallback
+    })
+}
+
 function getFirstDate(){
     var date = today;
     var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -42,14 +53,25 @@ var table = document.getElementById("calander");
 var closeBtn = document.getElementById("close");
 
 
-$("#calander .daybutton").on("click", ()=>{
-    $("#schedule").addClass("show");
-    var selectedday = $(this).attr("date");
-    console.log(selectedday);
-    var requestJSON = {
+$("#calander .daybutton").on("click", (event)=>{
 
+    var selectedday = event.target.getAttribute("date").split(" ");
+    var requestJSON = {
+        event : "getdayinfo",
+        year : selectedday[0],
+        month : selectedday[1],
+        day : selectedday[2],
+        token : $.cookie("id_token")
     }
+    request(requestJSON, function(data) {          //make request to server and recieve data
+        var dataJSON = JSON.parse(data);    //parse data string to jso
+        //for period in schedule show expandable box
+        $("#schedule").
+    }, function(err) {
+        console.log("error retrieving day");
+    })
     var contentJSON = 0;
+        $("#schedule").addClass("show");
     //$("#schedule")
 })
 
