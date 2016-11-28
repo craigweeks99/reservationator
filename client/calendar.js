@@ -56,18 +56,24 @@ var closeBtn = document.getElementById("close");
 $("#calander .daybutton").on("click", (event)=>{
 
     var selectedday = event.target.getAttribute("date").split(" ");
+    $("#schedule #date").html(selectedday[0] + "/" + selectedday[1] + "/" + selectedday[2]);
     var requestJSON = {
         event : "getdayinfo",
         year : selectedday[0],
         month : selectedday[1],
         day : selectedday[2],
+	groupID : $.cookie("group_id"),
         token : $.cookie("id_token")
     }
     request(requestJSON, function(data) {          //make request to server and recieve data
         var dataJSON = JSON.parse(data);    //parse data string to jso
         //for period in schedule show expandable box
+<<<<<<< HEAD
         console.log(data);
         $("#schedule .modal-content").append("<p1>"+JSON.toString(dataJSON)+"</p1>");
+=======
+        //$("#schedule").
+>>>>>>> 178cfc133618980fd9327a27e1b0fa0651d125d2
     }, function(err) {
         console.log("error retrieving day");
     })
