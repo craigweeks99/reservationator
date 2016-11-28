@@ -81,18 +81,16 @@ for(mm = 0; mm < 12; mm++) {
         days.push(ddd);
     }
 }
-mongo().then(function(db) {
-    db.collection("days").insertMany(dayarray);
-    db.close();
-    if(!db.collection("days").find().toArray((err, res) => {
+mongo().then((db) => {
+    db.collection("days").find().toArray((err, res) => {
         if(!err && !res.length) {
             db.collection("days").insertMany(dayarray);
             db.close();
         } else {
             console.log("No days added.");
         }
-    }))
-});
+    });
+);
 //var cal = new clndr.Calendar(clndr.MONDAY);
 //var yearCalendar = cal.yeardayscalendar(epoch);
 //console.log(date);

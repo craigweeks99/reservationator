@@ -132,16 +132,21 @@ for(mm = 0; mm < 12; mm++) {
         var ddd = "2016" + String(mm+1) + String(dd+1);
 
         dayarray.push(d);
-        mongo().then(function(db) {
-            if(!db.collection("days").find()) {                 //if theres not allready a days collection
-                db.collection("days").insertMany(dayarray);
-                db.close();
-            }
-        });
-        
+
+
         days.push(ddd);
     }
 }
+mongo().then((db) => {
+    db.collection("days").find().toArray((err, res) => {
+        if(!err && !res.length) {
+            db.collection("days").insertMany(dayarray);
+            db.close();
+        } else {
+            console.log("No days added.");
+        }
+    });
+);
 //var cal = new clndr.Calendar(clndr.MONDAY);
 //var yearCalendar = cal.yeardayscalendar(epoch);
 //console.log(date);
