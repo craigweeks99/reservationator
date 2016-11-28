@@ -131,16 +131,41 @@ function listener(request, response) {  //big boi function for server handling
                     mongo().then( (db) => {
                         console.log("here");
                         //TODO should make sure group doesnt allready exist here.
-                        if(!db.collection("groups").find({name : json.name}))
-                        {
-                            db.collection("groups").insert({name : json.name, description : json.description, restrictive : json.restrictive, users : [user.sub]});
-                            resJSON.groupCreated = true;
-                            resJSON.group = db.collection("groups").find({name : json.group});
-                        }
+                        db.collection("groups").find({name : json.name}).toArray((err, result) => {
+                            console.log(result);
+                            if(err == null && !result.length)   //if theres not an error and a group with that name was not found
+                            {
+
+                                db.collection("groups").insertOne(
+                                    {
+                                        name : json.name,
+                                        description : json.description,
+                                        restrictive : json.restrictive,
+                                        users : [user.sub]
+                                    }
+                                );
+                                resJSON.groupCreated = true;
+                                db.collection("groups").find({name : json.group}).toArray((err, result) => {
+                                    if(err == null)
+                                    {
+                                        resJSON.group = result;
+                                    }
+                                    else{resJSON.group = "ERROR RETRIEVING GROUP"}
+                                    response.end(JSON.stringify(resJSON));
+                                });
+                            } else {
+                                if(err)
+                                {
+                                    console.log("ERRROROR!!!" + err);
+                                }
+                                response.end(JSON.stringify(resJSON));
+                            }
+
+                        });
                     });
+
                 }
             });
-            response.end(JSON.stringify(resJSON));
         }
         else {
             var resJSON = {"pung" : "true"};

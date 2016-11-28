@@ -66,7 +66,8 @@ $("#calander .daybutton").on("click", (event)=>{
     request(requestJSON, function(data) {          //make request to server and recieve data
         var dataJSON = JSON.parse(data);    //parse data string to jso
         //for period in schedule show expandable box
-        $("#schedule").
+        console.log(data);
+        $("#schedule .modal-content").append("<p1>"+JSON.toString(dataJSON)+"</p1>");
     }, function(err) {
         console.log("error retrieving day");
     })
