@@ -90,7 +90,7 @@ mongo().then((db) => {
             console.log("No days added.");
         }
     });
-);
+});
 //var cal = new clndr.Calendar(clndr.MONDAY);
 //var yearCalendar = cal.yeardayscalendar(epoch);
 //console.log(date);

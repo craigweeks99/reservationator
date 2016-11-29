@@ -146,7 +146,7 @@ mongo().then((db) => {
             console.log("No days added.");
         }
     });
-);
+});
 //var cal = new clndr.Calendar(clndr.MONDAY);
 //var yearCalendar = cal.yeardayscalendar(epoch);
 //console.log(date);
@@ -196,13 +196,14 @@ function listener(request, response) {  //big boi function for server handling
                 if (user.verified) {
                     resJSON.verified = true;
                     mongo().then(function(db) {     //create connection with database
-                        db.collection("days").find({ymd : json.ymd}).toArray(function(err, result) {  //retrieve dayta
-                            console.log(result);
-                            resJSON.day = result;
+                        db.collection("days").find({date : json.ymd}).toArray(function(err, result) {  //retrieve dayta
+                            resJSON.day = JSON.stringify(result[0]);
+                            console.log(resJSON.day);
+                            response.end(JSON.stringify(resJSON));
                         });
                     });
                 }
-                response.end(JSON.stringify(resJSON));
+
             }, (err) => {
                 console.log("Day retrieval failed!");
                 response.end(JSON.stringify(resJson));

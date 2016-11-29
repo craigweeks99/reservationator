@@ -59,6 +59,7 @@ $("#calander .daybutton").on("click", (event)=>{
     $("#schedule #date").html(selectedday[0] + "/" + selectedday[1] + "/" + selectedday[2]);
     var requestJSON = {
         event : "getdayinfo",
+        ymd : selectedday[0] + selectedday[1] + selectedday[2],
         year : selectedday[0],
         month : selectedday[1],
         day : selectedday[2],
@@ -69,7 +70,14 @@ $("#calander .daybutton").on("click", (event)=>{
         var dataJSON = JSON.parse(data);    //parse data string to jso
         //for period in schedule show expandable box
         console.log(data);
-        $("#schedule .modal-content").append("<p1>"+JSON.toString(dataJSON)+"</p1>");
+        var scheduleHTML = "";
+        var day = JSON.parse(dataJSON.day);
+        schedule.html
+        for(var p in day.schedules[0].periods) {
+            var period = day.schedules[0].periods[p];
+            scheduleHTML += "<div class=.period>" + period.name + ": " + period.start + " to " + period.end + "</div>";
+        }
+        $("#schedule .modal-content").append(scheduleHTML);
     }, function(err) {
         console.log("error retrieving day");
     })
@@ -86,7 +94,7 @@ $("#close").on("click", ()=>{
 window.onclick = function(event) {
     if (event.target == modal) {
         modal.style.display = "none";
-        }
+    }
 }
 
 function dropBtn1(){
